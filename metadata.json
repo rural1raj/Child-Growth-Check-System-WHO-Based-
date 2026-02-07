@@ -1,0 +1,5 @@
+{
+  "name": "Child Growth-System",
+  "description": "A mobile-first health application for Anganwadi Workers to monitor child growth based on WHO standards, featuring Hindi language support and visual growth indicators.",
+  "requestFramePermissions": []
+}
