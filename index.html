@@ -1,49 +1,81 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>बाल विकास जाँच प्रणाली</title>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Hindi Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Child Growth Checker</title>
 
   <style>
     body {
-      font-family: 'Noto Sans Devanagari', sans-serif;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    .card {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 15px;
+      font-weight: bold;
     }
   </style>
 </head>
 
-<body class="bg-gray-100 p-4">
+<body>
 
-  <div id="root"></div>
+  <div class="card">
+    <h2>बाल विकास जाँच प्रणाली</h2>
 
-  <!-- React (NO importmap) -->
-  <script type="module">
-    import React from "https://esm.sh/react@18";
-    import ReactDOM from "https://esm.sh/react-dom@18/client";
+    <label>Age (months):</label>
+    <input type="number" id="age" min="0" max="60">
 
-    function App() {
-      return (
-        React.createElement("div", { className: "max-w-md mx-auto bg-white p-4 rounded shadow" },
-          React.createElement("h1", { className: "text-xl font-bold mb-4 text-center" },
-            "बाल विकास जाँच प्रणाली"
-          ),
-          React.createElement("p", { className: "text-center text-gray-600" },
-            "ऐप सही तरह से काम कर रहा है ✅"
-          )
-        )
-      );
+    <label>Gender:</label>
+    <select id="gender">
+      <option value="male">Boy</option>
+      <option value="female">Girl</option>
+    </select>
+
+    <button onclick="checkGrowth()">Check Growth</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function checkGrowth() {
+      const age = Number(document.getElementById("age").value);
+      const gender = document.getElementById("gender").value;
+
+      if (age < 0 || age > 60) {
+        document.getElementById("result").innerText =
+          "कृपया 0 से 60 महीने के बीच उम्र दर्ज करें";
+        return;
+      }
+
+      // WHO simple average logic (demo)
+      let weight = (age * 0.5 + 3).toFixed(1);
+      let height = (age * 1.2 + 50).toFixed(1);
+
+      document.getElementById("result").innerHTML =
+        `सामान्य वजन: ${weight} kg<br>
+         सामान्य ऊँचाई: ${height} cm`;
     }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(React.createElement(App));
   </script>
 
 </body>
 </html>
-
