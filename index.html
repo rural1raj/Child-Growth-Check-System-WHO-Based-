@@ -1,138 +1,35 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>बाल विकास जाँच प्रणाली</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Hindi Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      font-family: 'Noto Sans Devanagari', sans-serif;
-      background-color: #f0f4f8;
-    }
-  </style>
-</head>
-<body class="p-4">
-
-<div class="max-w-md mx-auto bg-white rounded-xl shadow p-4">
-  <h1 class="text-xl font-bold text-center mb-4">
-    <i class="fa-solid fa-child text-blue-600"></i> बाल विकास जाँच प्रणाली
-  </h1>
-
-  <label class="block mb-1 font-semibold">उम्र (महीनों में)</label>
-  <input id="age" type="number" min="0" max="60"
-         class="w-full p-2 border rounded mb-3">
-
-  <label class="block mb-1 font-semibold">लिंग</label>
-  <select id="gender" class="w-full p-2 border rounded mb-4">
-    <option value="boy">लड़का</option>
-    <option value="girl">लड़की</option>
-  </select>
-
-  <button onclick="checkGrowth()"
-          class="w-full bg-blue-600 text-white py-2 rounded font-semibold">
-    जाँच करें
-  </button>
-
-  <div id="result" class="mt-4 text-center font-semibold"></div>
-  <canvas id="growthChart" class="mt-4"></canvas>
-</div>
-
-<script>
-  // WHO 0–60 months data (sample avg, realistic values can be replaced)
-  const WHO_DATA = {
-    boy: {
-      weight: [3.3, 4.5, 5.6, 6.4, 7.0, 7.5, 8.0, 8.4, 8.8, 9.2, 9.5, 9.9, 10.2, 10.5, 10.8, 11.0, 11.3, 11.5, 11.8, 12.0, 12.3, 12.5, 12.7, 13.0, 13.2, 13.4, 13.6, 13.8, 14.0, 14.2, 14.4, 14.6, 14.8, 15.0, 15.2, 15.4, 15.6, 15.8, 16.0, 16.2, 16.4, 16.6, 16.8, 17.0, 17.2, 17.4, 17.6, 17.8, 18.0, 18.2, 18.4, 18.6, 18.8, 19.0, 19.2, 19.4, 19.6, 19.8, 20.0],
-      height: [49.9, 53.7, 57.1, 60.0, 62.5, 64.8, 66.9, 68.8, 70.6, 72.2, 73.8, 75.2, 76.6, 78.0, 79.3, 80.5, 81.8, 83.0, 84.2, 85.4, 86.6, 87.8, 88.9, 90.1, 91.3, 92.4, 93.6, 94.7, 95.9, 97.0, 98.1, 99.3, 100.4, 101.5, 102.7, 103.8, 104.9, 106.0, 107.2, 108.3, 109.4, 110.5, 111.7, 112.8, 113.9, 115.0, 116.2, 117.3, 118.4, 119.5, 120.6, 121.8, 122.9, 124.0, 125.1, 126.2, 127.4, 128.5, 129.6, 130.7]
-    },
-    girl: {
-      weight: [3.2, 4.2, 5.1, 5.8, 6.4, 6.9, 7.4, 7.8, 8.2, 8.6, 9.0, 9.3, 9.6, 10.0, 10.3, 10.6, 10.9, 11.2, 11.5, 11.8, 12.1, 12.4, 12.6, 12.9, 13.2, 13.5, 13.7, 14.0, 14.3, 14.5, 14.8, 15.1, 15.4, 15.6, 15.9, 16.2, 16.4, 16.7, 17.0, 17.2, 17.5, 17.8, 18.0, 18.3, 18.6, 18.8, 19.1, 19.4, 19.6, 19.9, 20.2, 20.4, 20.7, 21.0, 21.2, 21.5, 21.8, 22.0, 22.3, 22.6],
-      height: [49.1, 52.7, 55.9, 58.7, 61.1, 63.4, 65.5, 67.5, 69.3, 71.0, 72.7, 74.2, 75.7, 77.2, 78.6, 80.0, 81.4, 82.7, 84.0, 85.3, 86.6, 87.9, 89.1, 90.4, 91.6, 92.8, 94.0, 95.2, 96.4, 97.6, 98.8, 100.0, 101.2, 102.4, 103.6, 104.8, 106.0, 107.2, 108.4, 109.6, 110.8, 112.0, 113.2, 114.4, 115.6, 116.8, 118.0, 119.2, 120.4, 121.6, 122.8, 124.0, 125.2, 126.4, 127.6, 128.8, 130.0, 131.2, 132.4, 133.6]
-    }
-  };
-
-  let chart; // Chart.js instance
-
-  function checkGrowth() {
-    const age = Number(document.getElementById("age").value);
-    const gender = document.getElementById("gender").value;
-
-    if (isNaN(age) || age < 0 || age > 60) {
-      document.getElementById("result").innerText =
-        "कृपया 0 से 60 महीने की सही उम्र डालें";
-      return;
-    }
-
-    // Weight & Height
-    const weight = WHO_DATA[gender].weight[age].toFixed(1);
-    const height = WHO_DATA[gender].height[age].toFixed(1);
-
-    // Status
-    let status = "सामान्य";
-    if ((weight < WHO_DATA[gender].weight[age] * 0.9)) status = "कम वजन";
-    if ((weight > WHO_DATA[gender].weight[age] * 1.2)) status = "ज्यादा वजन";
-
-    document.getElementById("result").innerHTML = `
-      उम्र: ${age} महीने<br>
-      वजन: ${weight} kg<br>
-      ऊँचाई: ${height} cm<br>
-      स्थिति: ${status}
-    `;
-
-    // Chart update
-    const labels = Array.from({length: 61}, (_, i) => i); // 0-60 months
-    const dataWeight = WHO_DATA[gender].weight;
-    const dataHeight = WHO_DATA[gender].height;
-
-    const ctx = document.getElementById('growthChart').getContext('2d');
-
-    if (chart) chart.destroy(); // destroy old chart
-
-    chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'वजन (kg)',
-            data: dataWeight,
-            borderColor: 'blue',
-            backgroundColor: 'rgba(0,0,255,0.1)',
-            tension: 0.3
-          },
-          {
-            label: 'ऊँचाई (cm)',
-            data: dataHeight,
-            borderColor: 'green',
-            backgroundColor: 'rgba(0,255,0,0.1)',
-            tension: 0.3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'WHO 0–60 महीनों का विकास चार्ट' }
-        },
-        scales: {
-          x: { title: { display: true, text: 'Age (months)' } },
-          y: { title: { display: true, text: 'Value' } }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>बाल विकास जाँच प्रणाली</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background-color: #f0f4f8;
+            touch-action: manipulation;
         }
-      }
-    });
+        .ios-input {
+            -webkit-appearance: none;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
   }
+}
 </script>
-
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <div id="root"></div>
 </body>
 </html>
-
