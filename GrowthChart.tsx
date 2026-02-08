@@ -14,15 +14,15 @@ interface GrowthChartProps {
 
 const GrowthChart: React.FC<GrowthChartProps> = ({ label, unit, childAge, childValue, gender, type }) => {
   const data = GROWTH_DATA[gender];
-  const padding = 40;
+  const padding = 45; // Increased padding for better label visibility
   const width = 300;
-  const height = 200;
+  const height = 220; // Slightly taller for clarity
 
   // Calculate scales
   const maxAge = 60;
   const values = data.map(d => type === 'weight' ? d.weightMedian : d.heightMedian);
-  const minValue = Math.min(...values, childValue) * 0.8;
-  const maxValue = Math.max(...values, childValue) * 1.1;
+  const minValue = Math.min(...values, childValue) * 0.75;
+  const maxValue = Math.max(...values, childValue) * 1.15;
 
   const xScale = (age: number) => padding + (age / maxAge) * (width - 2 * padding);
   const yScale = (val: number) => height - padding - ((val - minValue) / (maxValue - minValue)) * (height - 2 * padding);
@@ -40,31 +40,59 @@ const GrowthChart: React.FC<GrowthChartProps> = ({ label, unit, childAge, childV
   const childX = xScale(childAge);
   const childY = yScale(childValue);
 
+  // Colors
+  const medianColor = "#2563eb"; // Distinct Royal Blue
+  const childColor = "#e11d48";  // High-contrast Rose/Red
+  const axisColor = "#64748b";   // Slate 500 for better contrast against white
+
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-      <h3 className="text-sm font-bold text-gray-600 mb-2 text-center">{label} ({unit}) चार्ट</h3>
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+      <h3 className="text-sm font-black text-gray-700 mb-3 text-center border-b border-gray-50 pb-2">
+        {label} ({unit}) प्रगति चार्ट
+      </h3>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto drop-shadow-sm">
+        {/* Grid Lines (Horizontal) */}
+        {[0, 0.25, 0.5, 0.75, 1].map((p, i) => {
+          const y = padding + p * (height - 2 * padding);
+          return <line key={i} x1={padding} y1={y} x2={width - padding} y2={y} stroke="#f1f5f9" strokeWidth="1" />;
+        })}
+
         {/* Axes */}
-        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#cbd5e1" strokeWidth="2" />
-        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#cbd5e1" strokeWidth="2" />
+        <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke={axisColor} strokeWidth="2" strokeLinecap="round" />
+        <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke={axisColor} strokeWidth="2" strokeLinecap="round" />
         
         {/* WHO Median Curve */}
-        <path d={pathD} fill="none" stroke="#94a3b8" strokeWidth="3" strokeDasharray="4 2" />
+        <path d={pathD} fill="none" stroke={medianColor} strokeWidth="3.5" strokeLinejoin="round" strokeLinecap="round" />
         
-        {/* Labels for axes */}
-        <text x={width / 2} y={height - 5} textAnchor="middle" fontSize="10" fill="#64748b">आयु (महीने)</text>
-        <text x={10} y={height / 2} textAnchor="middle" fontSize="10" fill="#64748b" transform={`rotate(-90, 10, ${height / 2})`}>{unit}</text>
+        {/* Axis Labels */}
+        <text x={width / 2} y={height - 10} textAnchor="middle" fontSize="10" fontWeight="bold" fill={axisColor}>आयु (महीने)</text>
+        <text x={12} y={height / 2} textAnchor="middle" fontSize="10" fontWeight="bold" fill={axisColor} transform={`rotate(-90, 12, ${height / 2})`}>{unit}</text>
 
-        {/* Child Point */}
-        <circle cx={childX} cy={childY} r="6" fill="#ea580c" className="animate-pulse" />
-        <text x={childX} y={childY - 10} textAnchor="middle" fontSize="12" fontWeight="bold" fill="#ea580c">
+        {/* Child Point Halo for better visibility */}
+        <circle cx={childX} cy={childY} r="8" fill={childColor} opacity="0.2" className="animate-pulse" />
+        {/* Actual Child Point - Fix: removed invalid shadow attribute and used style for filter instead */}
+        <circle 
+          cx={childX} 
+          cy={childY} 
+          r="5" 
+          fill={childColor} 
+          stroke="white" 
+          strokeWidth="2" 
+          style={{ filter: 'drop-shadow(0px 0px 2px rgba(0,0,0,0.2))' }}
+        />
+        
+        <text x={childX} y={childY - 12} textAnchor="middle" fontSize="12" fontWeight="900" fill={childColor} style={{ textShadow: '0px 0px 2px white' }}>
           बच्चा
         </text>
 
-        {/* Legend */}
-        <g transform={`translate(${width - 100}, ${padding})`}>
-           <line x1="0" y1="0" x2="15" y2="0" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 2" />
-           <text x="20" y="4" fontSize="8" fill="#64748b">WHO औसत</text>
+        {/* Legend Box */}
+        <g transform={`translate(${width - 105}, ${padding - 10})`}>
+           <rect x="-5" y="-12" width="100" height="30" rx="4" fill="white" fillOpacity="0.8" />
+           <line x1="0" y1="0" x2="15" y2="0" stroke={medianColor} strokeWidth="3" />
+           <text x="20" y="4" fontSize="9" fontWeight="bold" fill={medianColor}>WHO औसत</text>
+           
+           <circle cx="7.5" cy="14" r="3" fill={childColor} />
+           <text x="20" y="18" fontSize="9" fontWeight="bold" fill={childColor}>आपका बच्चा</text>
         </g>
       </svg>
     </div>
